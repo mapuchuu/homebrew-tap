@@ -11,10 +11,15 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - name: Install the way a user would
+        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        run: brew install mapuchuu/tap/longyan-reader && brew uninstall --cask longyan-reader && brew untap mapuchuu/tap
       - name: Tap this checkout
         run: |
           mkdir -p "$(brew --repository)/Library/Taps/mapuchuu"
           ln -s "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/mapuchuu/homebrew-tap"
+          brew trust mapuchuu/tap
       - run: brew style mapuchuu/tap
       - run: brew audit --cask --online mapuchuu/tap/longyan-reader
       - run: brew install --cask mapuchuu/tap/longyan-reader
