@@ -1,0 +1,32 @@
+# Points the cask at the newest Longyan Reader release. Runs daily and after a manual start.
+name: Bump cask
+
+on:
+  schedule:
+    - cron: "41 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update version and sha256
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view -R mapuchuu/longyan-reader --json tagName -q .tagName)
+          version=${tag#v}
+          current=$(sed -n 's/^  version "\(.*\)"/\1/p' Casks/longyan-reader.rb)
+          [ "$version" = "$current" ] && { echo "already $version"; exit 0; }
+          sha=$(gh release view "$tag" -R mapuchuu/longyan-reader --json assets \
+            -q ".assets[] | select(.name == \"LongyanReader-$version.zip\") | .digest" | sed 's/^sha256://')
+          [ -n "$sha" ] || { echo "no LongyanReader-$version.zip on $tag" >&2; exit 1; }
+          sed -i "s/^  version \".*\"/  version \"$version\"/; s/^  sha256 \".*\"/  sha256 \"$sha\"/" Casks/longyan-reader.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -qam "longyan-reader $version"
+          git push -q

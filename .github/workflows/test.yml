@@ -1,0 +1,25 @@
+# Audits the cask and installs it on a real Mac whenever it changes.
+name: Test cask
+
+on:
+  push:
+    paths: ["Casks/**", ".github/workflows/test.yml"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tap this checkout
+        run: |
+          mkdir -p "$(brew --repository)/Library/Taps/mapuchuu"
+          ln -s "$GITHUB_WORKSPACE" "$(brew --repository)/Library/Taps/mapuchuu/homebrew-tap"
+      - run: brew style mapuchuu/tap
+      - run: brew audit --cask --online mapuchuu/tap/longyan-reader
+      - run: brew install --cask mapuchuu/tap/longyan-reader
+      - name: Check the app
+        run: |
+          test -d "/Applications/Longyan Reader.app"
+          spctl --assess --type execute -vv "/Applications/Longyan Reader.app"
+      - run: brew uninstall --cask longyan-reader
