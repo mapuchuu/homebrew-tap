@@ -1,6 +1,6 @@
 cask "longyan-reader" do
-  version "1.1"
-  sha256 "0d22eb7401655eb7d04fe203fa300695ca58a82662fa18e000b17a17bbb0f7e8"
+  version "1.1.1"
+  sha256 "5f7eb066f10e514319aba2dc58fe57ddcbddae2d160375b991b966082914e2e0"
 
   url "https://github.com/mapuchuu/longyan-reader/releases/download/v#{version}/LongyanReader-#{version}.zip"
   name "Longyan Reader"
